@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brick Race Game</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #333;
+      font-family: Arial, sans-serif;
+    }
+    .game-container {
+      position: relative;
+      width: 200px;
+      height: 600px;
+      background: #444;
+      overflow: hidden;
+      border: 2px solid #000;
+    }
+    .road {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #444;
+    }
+    .road::before {
+      content: '';
+      position: absolute;
+      width: 4px;
+      height: 100%;
+      background: repeating-linear-gradient(
+        to bottom,
+        #fff,
+        #fff 20px,
+        transparent 20px,
+        transparent 40px
+      );
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+    }
+    .player {
+      position: absolute;
+      bottom: 20px;
+      font-size: 40px;
+      left: 10px;
+      z-index: 2;
+    }
+    .obstacle {
+      position: absolute;
+      font-size: 40px;
+      z-index: 2;
+    }
+    .stats {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border: 1px solid #000;
+    }
+    .stats span {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="road"></div>
+    <div class="player" id="player">𐀪</div>
+    <div class="stats">
+      <span>Score: <span id="score">0</span></span>
+      <span>Hi-Score: <span id="hiScore">0</span></span>
+    </div>
+  </div>
+  <script>
+    const gameContainer = document.querySelector('.game-container');
+    const player = document.getElementById('player');
+    const scoreEl = document.getElementById('score');
+    const hiScoreEl = document.getElementById('hiScore');
+
+    let score = 0;
+    let hiScore = localStorage.getItem('hiScore') || 0;
+    let playerPosition = 10;
+    let gameInterval;
+    const lanes = [10, 150]; // Lane positions
+
+    hiScoreEl.textContent = hiScore;
+
+    const movePlayer = (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'a') {
+        playerPosition = Math.max(10, playerPosition - 140);
+      } else if (e.key === 'ArrowRight' || e.key === 'd') {
+        playerPosition = Math.min(150, playerPosition + 140);
+      }
+      player.style.left = playerPosition + 'px';
+    };
+
+    const handleTouch = (startX, endX) => {
+      if (endX < startX) {
+        playerPosition = Math.max(10, playerPosition - 140);
+      } else if (endX > startX) {
+        playerPosition = Math.min(150, playerPosition + 140);
+      }
+      player.style.left = playerPosition + 'px';
+    };
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+    });
+
+    document.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      handleTouch(touchStartX, touchEndX);
+    });
+
+    const createObstacle = () => {
+      const obstacles = document.querySelectorAll('.obstacle');
+      if (obstacles.length === 0 || parseInt(obstacles[obstacles.length - 1].style.top) > 150) {
+        const obstacle = document.createElement('div');
+        obstacle.classList.add('obstacle');
+        const randomLane = lanes[Math.floor(Math.random() * lanes.length)];
+        obstacle.style.left = randomLane + 'px';
+        obstacle.style.top = '-40px';
+        obstacle.textContent = '🚖';
+        gameContainer.appendChild(obstacle);
+        return obstacle;
+      }
+    };
+
+    const moveObstacles = () => {
+      const obstacles = document.querySelectorAll('.obstacle');
+      obstacles.forEach((obstacle) => {
+        const obstacleTop = parseInt(getComputedStyle(obstacle).top);
+        obstacle.style.top = obstacleTop + 5 + 'px';
+
+        // Check collision
+        const obstacleLeft = parseInt(getComputedStyle(obstacle).left);
+        if (
+          obstacleTop >= 520 &&
+          obstacleTop <= 560 &&
+          obstacleLeft === playerPosition
+        ) {
+          clearInterval(gameInterval);
+          alert('Game Over! You were hit by a car!');
+          if (score > hiScore) {
+            hiScore = score;
+            localStorage.setItem('hiScore', hiScore);
+          }
+          location.reload();
+        }
+
+        // Remove obstacle if off-screen
+        if (obstacleTop > 600) {
+          obstacle.remove();
+          score++;
+          scoreEl.textContent = score;
+        }
+      });
+    };
+
+    const startGame = () => {
+      gameInterval = setInterval(() => {
+        createObstacle();
+        moveObstacles();
+      }, 30);
+    };
+
+    document.addEventListener('keydown', movePlayer);
+    startGame();
+  </script>
+</body>
+</html>
+

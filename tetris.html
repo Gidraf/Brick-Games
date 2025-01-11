@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tetris Game</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #000;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .tetris {
+      display: grid;
+      grid-template-rows: repeat(20, 20px);
+      grid-template-columns: repeat(10, 20px);
+      gap: 1px;
+      background-color: #222;
+      border: 2px solid #555;
+    }
+
+    .cell {
+      width: 20px;
+      height: 20px;
+      background-color: #333;
+    }
+
+    .active {
+      background-color: #0ff;
+    }
+
+    .taken {
+      background-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="tetris" id="grid"></div>
+  <script>
+    const grid = document.getElementById('grid');
+    const width = 10;
+    const height = 20;
+
+    // Create the grid
+    const cells = [];
+    for (let i = 0; i < width * height; i++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      grid.appendChild(cell);
+      cells.push(cell);
+    }
+
+    // Tetriminoes
+    const tetrominoes = [
+      [0, width, width * 2, width * 2 + 1], // L-shape
+      [1, width + 1, width * 2, width * 2 + 1], // Z-shape
+      [0, 1, width, width + 1], // Square
+      [1, width, width + 1, width + 2], // T-shape
+      [0, 1, 2, width + 1], // Line
+    ];
+
+    let currentPosition = 4;
+    let currentTetromino = tetrominoes[Math.floor(Math.random() * tetrominoes.length)];
+
+    function draw() {
+      currentTetromino.forEach(index => {
+        cells[currentPosition + index].classList.add('active');
+      });
+    }
+
+    function undraw() {
+      currentTetromino.forEach(index => {
+        cells[currentPosition + index].classList.remove('active');
+      });
+    }
+
+    function moveDown() {
+      undraw();
+      currentPosition += width;
+      if (currentTetromino.some(index => cells[currentPosition + index + width]?.classList.contains('taken') || !cells[currentPosition + index + width])) {
+        currentPosition -= width;
+        freeze();
+      }
+      draw();
+    }
+
+    function moveLeft() {
+      undraw();
+      if (!currentTetromino.some(index => (currentPosition + index) % width === 0 || cells[currentPosition + index - 1]?.classList.contains('taken'))) {
+        currentPosition -= 1;
+      }
+      draw();
+    }
+
+    function moveRight() {
+      undraw();
+      if (!currentTetromino.some(index => (currentPosition + index + 1) % width === 0 || cells[currentPosition + index + 1]?.classList.contains('taken'))) {
+        currentPosition += 1;
+      }
+      draw();
+    }
+
+    function freeze() {
+      if (currentTetromino.some(index => cells[currentPosition + index + width]?.classList.contains('taken') || !cells[currentPosition + index + width])) {
+        currentTetromino.forEach(index => cells[currentPosition + index].classList.add('taken'));
+        currentTetromino = tetrominoes[Math.floor(Math.random() * tetrominoes.length)];
+        currentPosition = 4;
+        draw();
+        checkGameOver();
+      }
+    }
+
+    function checkGameOver() {
+      if (currentTetromino.some(index => cells[currentPosition + index].classList.contains('taken'))) {
+        clearInterval(timerId);
+        alert('Game Over!');
+      }
+    }
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'ArrowLeft') moveLeft();
+      if (event.key === 'ArrowRight') moveRight();
+      if (event.key === 'ArrowUp') rotate();
+      if (event.key === 'ArrowDown') moveDown();
+    });
+
+    function rotate() {
+      undraw();
+      const newRotation = currentTetromino.map(index => {
+        const x = index % width;
+        const y = Math.floor(index / width);
+        return y + x * width - (width * Math.floor((x + 1) / width));
+      });
+      if (!newRotation.some(index => cells[currentPosition + index]?.classList.contains('taken') || (currentPosition + index) % width >= width)) {
+        currentTetromino = newRotation;
+      }
+      draw();
+    }
+
+    const timerId = setInterval(moveDown, 500);
+  </script>
+</body>
+</html>
