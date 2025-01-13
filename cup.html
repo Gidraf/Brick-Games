@@ -1,0 +1,295 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Catcher Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      background: url('background.jpg') no-repeat center center / cover; /* Replace with your image */
+    }
+
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .object {
+      position: absolute;
+      font-size: 2rem;
+    }
+
+    #cup {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 3rem;
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 1.5rem;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="score">Score: 0</div>
+    <div id="cup">🪣</div>
+  </div>
+
+  <script>
+    const gameContainer = document.getElementById('game-container');
+    const cup = document.getElementById('cup');
+    const scoreElement = document.getElementById('score');
+    let score = 0;
+    let gameInterval;
+
+    // Cup movement variables
+    let isTouching = false;
+    let startX = 0;
+    let currentCupX = 50; // Cup starts in the center
+
+    // Function to generate random objects
+    function spawnObject() {
+      const object = document.createElement('div');
+      object.classList.add('object');
+      const isGrenade = Math.random() > 0.7; // 30% chance to be a grenade
+      object.textContent = isGrenade ? '💣' : '💧';
+      object.style.left = Math.random() * (gameContainer.offsetWidth - 50) + 'px';
+      object.style.top = '0px';
+      gameContainer.appendChild(object);
+
+      const objectFall = setInterval(() => {
+        const objectTop = parseInt(object.style.top);
+        object.style.top = objectTop + 5 + 'px';
+
+        // Collision detection
+        const objectRect = object.getBoundingClientRect();
+        const cupRect = cup.getBoundingClientRect();
+        if (
+          objectRect.bottom > cupRect.top &&
+          objectRect.top < cupRect.bottom &&
+          objectRect.right > cupRect.left &&
+          objectRect.left < cupRect.right
+        ) {
+          if (isGrenade) {
+            alert('Game Over! Your final score: ' + score);
+            clearInterval(gameInterval);
+            location.reload();
+          } else {
+            score++;
+            scoreElement.textContent = 'Score: ' + score;
+          }
+          object.remove();
+          clearInterval(objectFall);
+        }
+
+        // Remove object if it falls out of bounds
+        if (objectTop > gameContainer.offsetHeight) {
+          object.remove();
+          clearInterval(objectFall);
+        }
+      }, 20);
+    }
+
+    // Start spawning objects
+    gameInterval = setInterval(spawnObject, 1000);
+
+    // Keyboard controls
+    document.addEventListener('keydown', (event) => {
+      const containerWidth = gameContainer.offsetWidth;
+      const cupWidth = cup.offsetWidth;
+
+      if (event.key === 'ArrowLeft' && currentCupX > 0) {
+        currentCupX -= 5;
+        cup.style.left = (currentCupX / containerWidth) * 100 + '%';
+      } else if (event.key === 'ArrowRight' && currentCupX < containerWidth - cupWidth) {
+        currentCupX += 5;
+        cup.style.left = (currentCupX / containerWidth) * 100 + '%';
+      }
+    });
+
+    // Touch controls for mobile
+    gameContainer.addEventListener('touchstart', (e) => {
+      isTouching = true;
+      startX = e.touches[0].clientX;
+    });
+
+    gameContainer.addEventListener('touchmove', (e) => {
+      if (isTouching) {
+        const touchX = e.touches[0].clientX;
+        const diff = touchX - startX;
+        currentCupX += diff;
+        currentCupX = Math.max(0, Math.min(currentCupX, gameContainer.offsetWidth - cup.offsetWidth));
+        cup.style.left = currentCupX + 'px';
+        startX = touchX;
+      }
+    });
+
+    gameContainer.addEventListener('touchend', () => {
+      isTouching = false;
+    });
+  </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Catcher Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      background: url('background.jpg') no-repeat center center / cover; /* Replace with your image */
+    }
+
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .object {
+      position: absolute;
+      font-size: 2rem;
+    }
+
+    #cup {
+      position: absolute;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 3rem;
+      cursor: grab;
+    }
+
+    #score {
+      position: absolute;
+      top: 5rem;
+      left: 1rem;
+      font-size: 1.5rem;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="score">Score: 0</div>
+    <div id="cup" draggable="false">🪣</div>
+  </div>
+
+  <script>
+    const gameContainer = document.getElementById('game-container');
+    const cup = document.getElementById('cup');
+    const scoreElement = document.getElementById('score');
+    let score = 0;
+    let gameInterval;
+
+    // Function to generate random objects
+    function spawnObject() {
+      const object = document.createElement('div');
+      object.classList.add('object');
+      const isGrenade = Math.random() > 0.7; // 30% chance to be a grenade
+      object.textContent = isGrenade ? '💣' : '💧';
+      object.style.left = Math.random() * (gameContainer.offsetWidth - 50) + 'px';
+      object.style.top = '0px';
+      gameContainer.appendChild(object);
+
+      const objectFall = setInterval(() => {
+        const objectTop = parseInt(object.style.top);
+        object.style.top = objectTop + 5 + 'px';
+
+        // Collision detection
+        const objectRect = object.getBoundingClientRect();
+        const cupRect = cup.getBoundingClientRect();
+        if (
+          objectRect.bottom > cupRect.top &&
+          objectRect.top < cupRect.bottom &&
+          objectRect.right > cupRect.left &&
+          objectRect.left < cupRect.right
+        ) {
+          if (isGrenade) {
+            alert('Game Over! Your final score: ' + score);
+            clearInterval(gameInterval);
+            location.reload();
+          } else {
+            score++;
+            scoreElement.textContent = 'Score: ' + score;
+          }
+          object.remove();
+          clearInterval(objectFall);
+        }
+
+        // Remove object if it falls out of bounds
+        if (objectTop > gameContainer.offsetHeight) {
+          object.remove();
+          clearInterval(objectFall);
+        }
+      }, 20);
+    }
+
+    // Start spawning objects
+    gameInterval = setInterval(spawnObject, 1000);
+
+    // Drag-and-drop functionality for the cup
+    let isDragging = false;
+
+    cup.addEventListener('mousedown', (e) => {
+      isDragging = true;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const containerRect = gameContainer.getBoundingClientRect();
+        const cupWidth = cup.offsetWidth;
+
+        // Update cup position
+        let newLeft = e.clientX - containerRect.left - cupWidth / 2;
+        newLeft = Math.max(0, Math.min(newLeft, gameContainer.offsetWidth - cupWidth));
+        cup.style.left = newLeft + 'px';
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    // Touch support
+    cup.addEventListener('touchstart', (e) => {
+      isDragging = true;
+    });
+
+    window.addEventListener('touchmove', (e) => {
+      if (isDragging) {
+        const containerRect = gameContainer.getBoundingClientRect();
+        const cupWidth = cup.offsetWidth;
+
+        // Update cup position
+        let newLeft = e.touches[0].clientX - containerRect.left - cupWidth / 2;
+        newLeft = Math.max(0, Math.min(newLeft, gameContainer.offsetWidth - cupWidth));
+        cup.style.left = newLeft + 'px';
+      }
+    });
+
+    window.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+  </script>
+</body>
+</html>
